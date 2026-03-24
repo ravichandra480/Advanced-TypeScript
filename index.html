@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced TypeScript — The Deep Book</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=JetBrains+Mono:wght@300;400;500;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0f;
+    --paper: #f5f0e8;
+    --paper-dark: #ede7d4;
+    --accent: #1a4ed8;
+    --accent-warm: #c2410c;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --keyword: #7dd3fc;
+    --type: #86efac;
+    --string: #fca5a5;
+    --comment: #64748b;
+    --number: #fde68a;
+    --gold: #b45309;
+    --sidebar-w: 280px;
+    --page-max: 860px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.75;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: var(--ink);
+    color: #c8bfaa;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: transform .3s ease;
+  }
+
+  #sidebar-header {
+    padding: 32px 24px 20px;
+    border-bottom: 1px solid #2a2a2e;
+  }
+
+  #sidebar-header .book-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #f5f0e8;
+    line-height: 1.3;
+  }
+
+  #sidebar-header .book-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .08em;
+    margin-top: 6px;
+  }
+
+  #toc { padding: 16px 0 40px; }
+
+  .toc-part {
+    padding: 14px 24px 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #665f50;
+  }
+
+  .toc-link {
+    display: block;
+    padding: 8px 24px 8px 28px;
+    color: #9d9480;
+    text-decoration: none;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14.5px;
+    line-height: 1.3;
+    border-left: 2px solid transparent;
+    transition: all .15s;
+  }
+
+  .toc-link:hover { color: #f5f0e8; border-left-color: #3b5ae0; padding-left: 32px; }
+  .toc-link.active { color: #f5f0e8; border-left-color: var(--accent); background: rgba(255,255,255,.03); }
+  .toc-link .ch-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444; margin-right: 6px; }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: 100vh;
+  }
+
+  /* ── COVER ── */
+  #cover {
+    min-height: 100vh;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 60px 40px;
+  }
+
+  #cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 39px,
+      rgba(255,255,255,.03) 39px, rgba(255,255,255,.03) 40px
+    ), repeating-linear-gradient(
+      90deg, transparent, transparent 39px,
+      rgba(255,255,255,.02) 39px, rgba(255,255,255,.02) 40px
+    );
+  }
+
+  #cover::after {
+    content: 'TS';
+    position: absolute;
+    font-family: 'Playfair Display', serif;
+    font-size: 42vw;
+    font-weight: 900;
+    color: rgba(255,255,255,.025);
+    bottom: -8vw;
+    right: -4vw;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .cover-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 5px 14px;
+    margin-bottom: 36px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(44px, 7vw, 88px);
+    font-weight: 900;
+    color: #f5f0e8;
+    text-align: center;
+    line-height: 1.05;
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+  }
+
+  .cover-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .cover-subtitle {
+    font-family: 'Crimson Pro', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: #7a7060;
+    margin-top: 20px;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .cover-divider {
+    width: 60px;
+    height: 1px;
+    background: #333;
+    margin: 36px auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-toc-preview {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+  }
+
+  .cover-toc-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #4a4540;
+    letter-spacing: .08em;
+  }
+
+  .cover-scroll {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .18em;
+    color: #3a3530;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  .cover-scroll::after {
+    content: '↓';
+    font-size: 16px;
+  }
+
+  @keyframes pulse { 0%,100% { opacity:.4 } 50% { opacity:1 } }
+
+  /* ── CHAPTERS ── */
+  .chapter {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: 80px 60px 100px;
+    border-bottom: 1px solid var(--paper-dark);
+    animation: fadeUp .5s ease both;
+  }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+
+  .chapter-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  h1.chapter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .chapter-intro {
+    font-size: 20px;
+    font-style: italic;
+    color: #5a5040;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--paper-dark);
+    max-width: 680px;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 52px 0 16px;
+    color: var(--ink);
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-style: italic;
+    font-weight: 400;
+    margin: 32px 0 12px;
+    color: #2a2520;
+  }
+
+  p { margin-bottom: 20px; max-width: 700px; }
+
+  strong { font-weight: 600; color: #1a1510; }
+
+  em.term {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .88em;
+    background: rgba(26,78,216,.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: var(--code-bg);
+    border-radius: 8px;
+    margin: 28px 0;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,.18), 0 1px 4px rgba(0,0,0,.12);
+    position: relative;
+  }
+
+  .code-header {
+    background: #1e293b;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .code-dots { display: flex; gap: 6px; }
+  .code-dots span {
+    width: 11px; height: 11px; border-radius: 50%;
+  }
+  .code-dots span:nth-child(1) { background: #ef4444; }
+  .code-dots span:nth-child(2) { background: #f59e0b; }
+  .code-dots span:nth-child(3) { background: #22c55e; }
+
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #475569;
+    letter-spacing: .1em;
+  }
+
+  pre {
+    padding: 22px 24px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--code-text);
+    tab-size: 2;
+  }
+
+  .kw { color: var(--keyword); }
+  .ty { color: var(--type); }
+  .st { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .nu { color: var(--number); }
+  .fn { color: #c4b5fd; }
+  .op { color: #94a3b8; }
+  .hl { background: rgba(255,255,255,.05); display: block; margin: 0 -24px; padding: 0 24px; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(26,78,216,.05);
+    padding: 16px 20px;
+    margin: 24px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .callout.warn {
+    border-left-color: var(--accent-warm);
+    background: rgba(194,65,12,.05);
+  }
+
+  .callout.tip {
+    border-left-color: #16a34a;
+    background: rgba(22,163,74,.05);
+  }
+
+  .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .callout.warn .callout-label { color: var(--accent-warm); }
+  .callout.tip .callout-label { color: #16a34a; }
+
+  .callout p { margin: 0; font-size: 17px; max-width: none; }
+
+  /* ── CONCEPT GRID ── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 28px 0;
+  }
+
+  .concept-card {
+    background: white;
+    border: 1px solid #ddd8cc;
+    border-radius: 8px;
+    padding: 18px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  }
+
+  .concept-card .cc-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .concept-card .cc-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+
+  .concept-card .cc-desc {
+    font-size: 13.5px;
+    color: #665f50;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 15px;
+  }
+
+  th {
+    background: var(--ink);
+    color: #f5f0e8;
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--paper-dark);
+    font-size: 15.5px;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background: rgba(0,0,0,.025); }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82em;
+    background: rgba(0,0,0,.07);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #2d3748;
+  }
+
+  /* ── CHAPTER PROGRESS ── */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: var(--sidebar-w); right: 0;
+    height: 2px;
+    background: var(--paper-dark);
+    z-index: 200;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width .1s;
+  }
+
+  /* ── MOBILE ── */
+  #menu-toggle {
+    display: none;
+    position: fixed;
+    top: 14px; left: 14px;
+    z-index: 300;
+    background: var(--ink);
+    color: #f5f0e8;
+    border: none;
+    padding: 10px 14px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 900px) {
+    #sidebar { transform: translateX(-100%); }
+    #sidebar.open { transform: translateX(0); }
+    #main { margin-left: 0; }
+    .progress-bar { left: 0; }
+    #menu-toggle { display: block; }
+    .chapter { padding: 60px 28px 80px; }
+    #cover { padding: 80px 28px 60px; }
+  }
+
+  /* ── CHAPTER NAV ── */
+  .chapter-nav {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: 40px 60px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .06em;
+    color: var(--ink);
+    text-decoration: none;
+    border: 1px solid #ccc8be;
+    padding: 12px 18px;
+    border-radius: 4px;
+    transition: all .2s;
+    background: white;
+  }
+
+  .nav-btn:hover { background: var(--ink); color: #f5f0e8; border-color: var(--ink); }
+
+  @media (max-width: 900px) {
+    .chapter-nav { padding: 40px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<button id="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <div class="book-title">Advanced<br>TypeScript</div>
+    <div class="book-subtitle">// the deep book · 2024</div>
+  </div>
+  <div id="toc">
+    <div class="toc-part">Front Matter</div>
+    <a href="#cover" class="toc-link active"><span class="ch-num">—</span>Cover</a>
+
+    <div class="toc-part">Part I · Type System</div>
+    <a href="#ch1" class="toc-link"><span class="ch-num">01</span>Generics</a>
+    <a href="#ch2" class="toc-link"><span class="ch-num">02</span>Conditional Types</a>
+    <a href="#ch3" class="toc-link"><span class="ch-num">03</span>Mapped Types</a>
+    <a href="#ch4" class="toc-link"><span class="ch-num">04</span>Template Literal Types</a>
+
+    <div class="toc-part">Part II · Type Ops</div>
+    <a href="#ch5" class="toc-link"><span class="ch-num">05</span>Infer & Type Inference</a>
+    <a href="#ch6" class="toc-link"><span class="ch-num">06</span>Utility Types Deep Dive</a>
+    <a href="#ch7" class="toc-link"><span class="ch-num">07</span>Narrowing & Guards</a>
+
+    <div class="toc-part">Part III · Patterns</div>
+    <a href="#ch8" class="toc-link"><span class="ch-num">08</span>Declaration Merging</a>
+    <a href="#ch9" class="toc-link"><span class="ch-num">09</span>Decorators</a>
+    <a href="#ch10" class="toc-link"><span class="ch-num">10</span>Module Patterns</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- COVER -->
+  <section id="cover">
+    <div class="cover-badge">The Deep Book</div>
+    <h1 class="cover-title">Advanced <em>Type</em>Script</h1>
+    <p class="cover-subtitle">Master the type system from the inside out</p>
+    <div class="cover-divider"></div>
+    <div class="cover-toc-preview">
+      <span class="cover-toc-item">Generics</span>
+      <span class="cover-toc-item">Conditional Types</span>
+      <span class="cover-toc-item">Mapped Types</span>
+      <span class="cover-toc-item">infer</span>
+      <span class="cover-toc-item">Decorators</span>
+      <span class="cover-toc-item">Utility Types</span>
+      <span class="cover-toc-item">Declaration Merging</span>
+      <span class="cover-toc-item">Template Literals</span>
+    </div>
+    <div class="cover-scroll">Read</div>
+  </section>
+
+  <!-- ═══ CHAPTER 1 ═══ -->
+  <article class="chapter" id="ch1">
+    <div class="chapter-label">Chapter 01 · Part I</div>
+    <h1 class="chapter-title">Generics</h1>
+    <p class="chapter-intro">Generics are the foundation of reusable, type-safe code. They let you write algorithms and data structures that work across many types while preserving the specific type information the compiler needs.</p>
+
+    <h2>Beyond the Angle Bracket</h2>
+    <p>Most developers meet generics as a simple <em class="term">T</em> placeholder and stop there. But the real power is in how TypeScript resolves type parameters — through <strong>inference, constraints, and defaults</strong>.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Generic function — T is inferred from the argument</span>
+<span class="kw">function</span> <span class="fn">identity</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span>(value<span class="op">:</span> <span class="ty">T</span>)<span class="op">:</span> <span class="ty">T</span> {
+  <span class="kw">return</span> value;
+}
+
+<span class="cm">// TypeScript infers T = string</span>
+<span class="kw">const</span> result <span class="op">=</span> <span class="fn">identity</span>(<span class="st">"hello"</span>); <span class="cm">// type: string</span>
+
+<span class="cm">// Explicit type argument overrides inference</span>
+<span class="kw">const</span> forced <span class="op">=</span> <span class="fn">identity</span><span class="op">&lt;</span><span class="ty">number</span><span class="op">&gt;</span>(<span class="nu">42</span>);    <span class="cm">// type: number</span></pre>
+    </div>
+
+    <h2>Generic Constraints</h2>
+    <p>The <em class="term">extends</em> keyword constrains what types are accepted. This is not inheritance — it's <strong>subtype checking</strong>. Any type assignable to the constraint is valid.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// T must have a .length property</span>
+<span class="kw">function</span> <span class="fn">getLength</span><span class="op">&lt;</span><span class="ty">T</span> <span class="kw">extends</span> { length<span class="op">:</span> <span class="ty">number</span> }<span class="op">&gt;</span>(arg<span class="op">:</span> <span class="ty">T</span>)<span class="op">:</span> <span class="ty">number</span> {
+  <span class="kw">return</span> arg.length;
+}
+
+<span class="fn">getLength</span>(<span class="st">"hello"</span>);    <span class="cm">// ✓  string has .length</span>
+<span class="fn">getLength</span>([<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>]);  <span class="cm">// ✓  array has .length</span>
+<span class="fn">getLength</span>(<span class="nu">42</span>);         <span class="cm">// ✗  number has no .length</span>
+
+<span class="cm">// Constraining one type param with another</span>
+<span class="kw">function</span> <span class="fn">getProperty</span><span class="op">&lt;</span><span class="ty">T</span>, <span class="ty">K</span> <span class="kw">extends</span> <span class="kw">keyof</span> <span class="ty">T</span><span class="op">&gt;</span>(obj<span class="op">:</span> <span class="ty">T</span>, key<span class="op">:</span> <span class="ty">K</span>)<span class="op">:</span> <span class="ty">T</span>[<span class="ty">K</span>] {
+  <span class="kw">return</span> obj[key];
+}
+
+<span class="kw">const</span> user <span class="op">=</span> { name<span class="op">:</span> <span class="st">"Alice"</span>, age<span class="op">:</span> <span class="nu">30</span> };
+<span class="fn">getProperty</span>(user, <span class="st">"name"</span>); <span class="cm">// type: string</span>
+<span class="fn">getProperty</span>(user, <span class="st">"age"</span>);  <span class="cm">// type: number</span></pre>
+    </div>
+
+    <h2>Generic Defaults</h2>
+    <p>Type parameters can have defaults, making them optional in generic interfaces and classes. This is essential when building extensible APIs.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">interface</span> <span class="ty">Repository</span><span class="op">&lt;</span><span class="ty">T</span>, <span class="ty">ID</span> <span class="op">=</span> <span class="ty">number</span><span class="op">&gt;</span> {
+  <span class="fn">findById</span>(id<span class="op">:</span> <span class="ty">ID</span>)<span class="op">:</span> <span class="ty">Promise</span><span class="op">&lt;</span><span class="ty">T</span> <span class="op">|</span> <span class="kw">null</span><span class="op">&gt;</span>;
+  <span class="fn">save</span>(entity<span class="op">:</span> <span class="ty">T</span>)<span class="op">:</span> <span class="ty">Promise</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span>;
+}
+
+<span class="cm">// ID defaults to number</span>
+<span class="kw">interface</span> <span class="ty">UserRepo</span> <span class="kw">extends</span> <span class="ty">Repository</span><span class="op">&lt;</span><span class="ty">User</span><span class="op">&gt;</span> {}
+
+<span class="cm">// Override ID to string (e.g. UUID)</span>
+<span class="kw">interface</span> <span class="ty">PostRepo</span> <span class="kw">extends</span> <span class="ty">Repository</span><span class="op">&lt;</span><span class="ty">Post</span>, <span class="ty">string</span><span class="op">&gt;</span> {}</pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">💡 Best Practice</div>
+      <p>Prefer <strong>inferred</strong> type arguments over explicit ones whenever the compiler can figure it out. Explicit arguments are a code smell that your types may be over-constrained or your function signature could be improved.</p>
+    </div>
+
+    <h2>Variadic Tuple Types</h2>
+    <p>TypeScript 4.0 introduced <strong>variadic tuple types</strong> — the ability to spread generic type arguments into tuple positions. This enables precise typing of functions like <code>concat</code>, <code>zip</code>, and argument spreading.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Spread types in tuple position</span>
+<span class="kw">type</span> <span class="ty">Concat</span><span class="op">&lt;</span><span class="ty">T</span> <span class="kw">extends</span> <span class="kw">unknown</span>[], <span class="ty">U</span> <span class="kw">extends</span> <span class="kw">unknown</span>[]<span class="op">&gt;</span> <span class="op">=</span> [<span class="op">...</span><span class="ty">T</span>, <span class="op">...</span><span class="ty">U</span>];
+
+<span class="kw">type</span> <span class="ty">Result</span> <span class="op">=</span> <span class="ty">Concat</span><span class="op">&lt;</span>[<span class="ty">number</span>, <span class="ty">string</span>], [<span class="ty">boolean</span>]<span class="op">&gt;</span>;
+<span class="cm">// type Result = [number, string, boolean]</span>
+
+<span class="cm">// Practical: Prepend to tuple</span>
+<span class="kw">type</span> <span class="ty">Prepend</span><span class="op">&lt;</span><span class="ty">T</span>, <span class="ty">Tuple</span> <span class="kw">extends</span> <span class="kw">unknown</span>[]<span class="op">&gt;</span> <span class="op">=</span> [<span class="ty">T</span>, <span class="op">...</span><span class="ty">Tuple</span>];
+
+<span class="kw">function</span> <span class="fn">addContext</span><span class="op">&lt;</span><span class="ty">Args</span> <span class="kw">extends</span> <span class="kw">unknown</span>[]<span class="op">&gt;</span>(
+  fn<span class="op">:</span> (...args<span class="op">:</span> <span class="ty">Args</span>) <span class="op">=&gt;</span> <span class="kw">void</span>
+)<span class="op">:</span> (...args<span class="op">:</span> <span class="ty">Prepend</span><span class="op">&lt;</span><span class="ty">string</span>, <span class="ty">Args</span><span class="op">&gt;</span>) <span class="op">=&gt;</span> <span class="kw">void</span> {
+  <span class="kw">return</span> (ctx, <span class="op">...</span>rest) <span class="op">=&gt;</span> <span class="fn">fn</span>(<span class="op">...</span>rest);
+}</pre>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 2 ═══ -->
+  <article class="chapter" id="ch2">
+    <div class="chapter-label">Chapter 02 · Part I</div>
+    <h1 class="chapter-title">Conditional Types</h1>
+    <p class="chapter-intro">Conditional types introduce if-else logic into the type level. They're the foundation of the most powerful utility types in TypeScript and enable computation that would otherwise be impossible.</p>
+
+    <h2>The Ternary of Types</h2>
+    <p>The syntax mirrors JavaScript's ternary operator: <em class="term">T extends U ? X : Y</em>. If <code>T</code> is assignable to <code>U</code>, the type resolves to <code>X</code>, otherwise to <code>Y</code>.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">type</span> <span class="ty">IsString</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ty">T</span> <span class="kw">extends</span> <span class="ty">string</span> ? <span class="st">"yes"</span> : <span class="st">"no"</span>;
+
+<span class="kw">type</span> <span class="ty">A</span> <span class="op">=</span> <span class="ty">IsString</span><span class="op">&lt;</span><span class="ty">string</span><span class="op">&gt;</span>;  <span class="cm">// "yes"</span>
+<span class="kw">type</span> <span class="ty">B</span> <span class="op">=</span> <span class="ty">IsString</span><span class="op">&lt;</span><span class="ty">number</span><span class="op">&gt;</span>;  <span class="cm">// "no"</span>
+
+<span class="cm">// Practical: flatten array types</span>
+<span class="kw">type</span> <span class="ty">Flatten</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ty">T</span> <span class="kw">extends</span> <span class="ty">Array</span><span class="op">&lt;</span><span class="kw">infer</span> <span class="ty">Item</span><span class="op">&gt;</span> ? <span class="ty">Item</span> : <span class="ty">T</span>;
+
+<span class="kw">type</span> <span class="ty">Str</span> <span class="op">=</span> <span class="ty">Flatten</span><span class="op">&lt;</span><span class="ty">string</span>[]<span class="op">&gt;</span>;  <span class="cm">// string</span>
+<span class="kw">type</span> <span class="ty">Num</span> <span class="op">=</span> <span class="ty">Flatten</span><span class="op">&lt;</span><span class="ty">number</span><span class="op">&gt;</span>;   <span class="cm">// number  (not an array, falls through)</span></pre>
+    </div>
+
+    <h2>Distributive Conditional Types</h2>
+    <p>When you pass a <strong>union type</strong> to a conditional type, TypeScript automatically <em>distributes</em> the condition over each member. This is called distribution and is fundamental to how many built-in types like <code>Exclude</code> and <code>Extract</code> work.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">type</span> <span class="ty">ToArray</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ty">T</span> <span class="kw">extends</span> <span class="kw">unknown</span> ? <span class="ty">T</span>[] : <span class="kw">never</span>;
+
+<span class="cm">// With a union, distribution applies:</span>
+<span class="kw">type</span> <span class="ty">R</span> <span class="op">=</span> <span class="ty">ToArray</span><span class="op">&lt;</span><span class="ty">string</span> <span class="op">|</span> <span class="ty">number</span><span class="op">&gt;</span>;
+<span class="cm">// type R = string[] | number[]  ← distributed!</span>
+
+<span class="cm">// To PREVENT distribution, wrap in a tuple:</span>
+<span class="kw">type</span> <span class="ty">NoDistrib</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> [<span class="ty">T</span>] <span class="kw">extends</span> [<span class="kw">unknown</span>] ? <span class="ty">T</span>[] : <span class="kw">never</span>;
+
+<span class="kw">type</span> <span class="ty">R2</span> <span class="op">=</span> <span class="ty">NoDistrib</span><span class="op">&lt;</span><span class="ty">string</span> <span class="op">|</span> <span class="ty">number</span><span class="op">&gt;</span>;
+<span class="cm">// type R2 = (string | number)[]  ← no distribution</span></pre>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-label">⚠ Watch Out</div>
+      <p>Distribution only occurs when the checked type is a <strong>bare type parameter</strong>. Wrapping it in a tuple (<code>[T]</code>) disables distribution — useful when you genuinely need to check unions as a whole.</p>
+    </div>
+
+    <h2>Chained Conditionals</h2>
+    <p>Conditional types can nest to create powerful type-level computations. Think of these as pattern matching over the type system.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">type</span> <span class="ty">TypeName</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span>
+  <span class="ty">T</span> <span class="kw">extends</span> <span class="ty">string</span>   ? <span class="st">"string"</span>   :
+  <span class="ty">T</span> <span class="kw">extends</span> <span class="ty">number</span>   ? <span class="st">"number"</span>   :
+  <span class="ty">T</span> <span class="kw">extends</span> <span class="ty">boolean</span>  ? <span class="st">"boolean"</span>  :
+  <span class="ty">T</span> <span class="kw">extends</span> <span class="kw">null</span>     ? <span class="st">"null"</span>     :
+  <span class="ty">T</span> <span class="kw">extends</span> <span class="kw">undefined</span>? <span class="st">"undefined"</span>:
+  <span class="ty">T</span> <span class="kw">extends</span> <span class="ty">Function</span> ? <span class="st">"function"</span> :
+                         <span class="st">"object"</span>;
+
+<span class="kw">type</span> <span class="ty">T1</span> <span class="op">=</span> <span class="ty">TypeName</span><span class="op">&lt;</span>() <span class="op">=&gt;</span> <span class="kw">void</span><span class="op">&gt;</span>; <span class="cm">// "function"</span>
+<span class="kw">type</span> <span class="ty">T2</span> <span class="op">=</span> <span class="ty">TypeName</span><span class="op">&lt;</span><span class="ty">string</span>[]<span class="op">&gt;</span>;      <span class="cm">// "object"</span></pre>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 3 ═══ -->
+  <article class="chapter" id="ch3">
+    <div class="chapter-label">Chapter 03 · Part I</div>
+    <h1 class="chapter-title">Mapped Types</h1>
+    <p class="chapter-intro">Mapped types let you construct new types by iterating over the keys of an existing type. Combined with modifiers and remapping, they can transform types in remarkably expressive ways.</p>
+
+    <h2>The for...in of the Type World</h2>
+    <p>The syntax <em class="term">{ [K in keyof T]: ... }</em> iterates over every key of <code>T</code> and lets you define the value type for each. All built-in utility types like <code>Partial</code>, <code>Required</code>, and <code>Readonly</code> are implemented this way.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Implement Partial from scratch</span>
+<span class="kw">type</span> <span class="ty">MyPartial</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> {
+  [<span class="ty">K</span> <span class="kw">in</span> <span class="kw">keyof</span> <span class="ty">T</span>]<span class="op">?:</span> <span class="ty">T</span>[<span class="ty">K</span>];
+};
+
+<span class="cm">// Implement Readonly</span>
+<span class="kw">type</span> <span class="ty">MyReadonly</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> {
+  <span class="kw">readonly</span> [<span class="ty">K</span> <span class="kw">in</span> <span class="kw">keyof</span> <span class="ty">T</span>]<span class="op">:</span> <span class="ty">T</span>[<span class="ty">K</span>];
+};
+
+<span class="cm">// Map over arbitrary string union</span>
+<span class="kw">type</span> <span class="ty">Flags</span> <span class="op">=</span> {
+  [<span class="ty">K</span> <span class="kw">in</span> <span class="st">"read"</span> <span class="op">|</span> <span class="st">"write"</span> <span class="op">|</span> <span class="st">"execute"</span>]<span class="op">:</span> <span class="ty">boolean</span>;
+};
+<span class="cm">// { read: boolean; write: boolean; execute: boolean }</span></pre>
+    </div>
+
+    <h2>Modifiers: +, −, readonly, ?</h2>
+    <p>The <strong>+</strong> and <strong>−</strong> modifiers add or remove <code>readonly</code> and <code>?</code> (optional) from mapped properties. This is how <code>Required</code> strips optionality.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Remove optional and readonly modifiers</span>
+<span class="kw">type</span> <span class="ty">Mutable</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> {
+  <span class="op">-</span><span class="kw">readonly</span> [<span class="ty">K</span> <span class="kw">in</span> <span class="kw">keyof</span> <span class="ty">T</span>]<span class="op">-?:</span> <span class="ty">T</span>[<span class="ty">K</span>];
+};
+
+<span class="kw">type</span> <span class="ty">Frozen</span> <span class="op">=</span> { <span class="kw">readonly</span> x<span class="op">?:</span> <span class="ty">number</span>; <span class="kw">readonly</span> y<span class="op">?:</span> <span class="ty">number</span> };
+<span class="kw">type</span> <span class="ty">Thawed</span> <span class="op">=</span> <span class="ty">Mutable</span><span class="op">&lt;</span><span class="ty">Frozen</span><span class="op">&gt;</span>;
+<span class="cm">// { x: number; y: number }  ← required and writable</span></pre>
+    </div>
+
+    <h2>Key Remapping with as</h2>
+    <p>TypeScript 4.1 added the ability to <strong>remap keys</strong> using <em class="term">as</em> in mapped types. This lets you rename, filter, or transform property names.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Prefix all keys with "get"</span>
+<span class="kw">type</span> <span class="ty">Getters</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> {
+  [<span class="ty">K</span> <span class="kw">in</span> <span class="kw">keyof</span> <span class="ty">T</span> <span class="kw">as</span> <span class="op">`</span><span class="kw">get</span>${<span class="ty">Capitalize</span><span class="op">&lt;</span><span class="ty">string</span> <span class="op">&amp;</span> <span class="ty">K</span><span class="op">&gt;}`</span>]<span class="op">:</span> () <span class="op">=&gt;</span> <span class="ty">T</span>[<span class="ty">K</span>];
+};
+
+<span class="kw">type</span> <span class="ty">Person</span> <span class="op">=</span> { name<span class="op">:</span> <span class="ty">string</span>; age<span class="op">:</span> <span class="ty">number</span> };
+<span class="kw">type</span> <span class="ty">PersonGetters</span> <span class="op">=</span> <span class="ty">Getters</span><span class="op">&lt;</span><span class="ty">Person</span><span class="op">&gt;</span>;
+<span class="cm">// { getName: () =&gt; string; getAge: () =&gt; number }</span>
+
+<span class="cm">// Filter keys with "as never"</span>
+<span class="kw">type</span> <span class="ty">OnlyStrings</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span> {
+  [<span class="ty">K</span> <span class="kw">in</span> <span class="kw">keyof</span> <span class="ty">T</span> <span class="kw">as</span> <span class="ty">T</span>[<span class="ty">K</span>] <span class="kw">extends</span> <span class="ty">string</span> ? <span class="ty">K</span> : <span class="kw">never</span>]<span class="op">:</span> <span class="ty">T</span>[<span class="ty">K</span>];
+};</pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">📌 Key Insight</div>
+      <p>Mapping a key to <strong>never</strong> removes it from the resulting type entirely. This is the idiomatic way to filter properties in a mapped type.</p>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 4 ═══ -->
+  <article class="chapter" id="ch4">
+    <div class="chapter-label">Chapter 04 · Part I</div>
+    <h1 class="chapter-title">Template Literal Types</h1>
+    <p class="chapter-intro">Template literal types bring the power of JavaScript's template literals to the type system. They enable string manipulation at compile time, unlocking a class of APIs previously impossible to type precisely.</p>
+
+    <h2>String Interpolation in Types</h2>
+    <p>The syntax mirrors template literals exactly — but at the type level. Union types distribute through template literals automatically.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">type</span> <span class="ty">Greeting</span> <span class="op">=</span> <span class="op">`</span><span class="st">Hello, </span>${<span class="ty">string</span>}<span class="op">`</span>;
+<span class="kw">const</span> hi<span class="op">:</span> <span class="ty">Greeting</span> <span class="op">=</span> <span class="st">"Hello, world"</span>;  <span class="cm">// ✓</span>
+<span class="kw">const</span> bye<span class="op">:</span> <span class="ty">Greeting</span> <span class="op">=</span> <span class="st">"Goodbye"</span>;      <span class="cm">// ✗</span>
+
+<span class="cm">// Unions distribute through template literals</span>
+<span class="kw">type</span> <span class="ty">Dir</span> <span class="op">=</span> <span class="st">"top"</span> <span class="op">|</span> <span class="st">"right"</span> <span class="op">|</span> <span class="st">"bottom"</span> <span class="op">|</span> <span class="st">"left"</span>;
+<span class="kw">type</span> <span class="ty">Padding</span> <span class="op">=</span> <span class="op">`</span><span class="st">padding-</span>${<span class="ty">Dir</span>}<span class="op">`</span>;
+<span class="cm">// "padding-top" | "padding-right" | "padding-bottom" | "padding-left"</span>
+
+<span class="cm">// Combining two unions creates a cross-product</span>
+<span class="kw">type</span> <span class="ty">Side</span> <span class="op">=</span> <span class="st">"left"</span> <span class="op">|</span> <span class="st">"right"</span>;
+<span class="kw">type</span> <span class="ty">Align</span> <span class="op">=</span> <span class="st">"top"</span> <span class="op">|</span> <span class="st">"bottom"</span>;
+<span class="kw">type</span> <span class="ty">Corner</span> <span class="op">=</span> <span class="op">`</span>${<span class="ty">Side</span>}<span class="op">-</span>${<span class="ty">Align</span>}<span class="op">`</span>;
+<span class="cm">// "left-top" | "left-bottom" | "right-top" | "right-bottom"</span></pre>
+    </div>
+
+    <h2>Intrinsic String Manipulation Types</h2>
+    <p>TypeScript ships four built-in string utility types for case manipulation:</p>
+
+    <table>
+      <thead><tr><th>Type</th><th>Effect</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>Uppercase&lt;S&gt;</code></td><td>All caps</td><td><code>"hello" → "HELLO"</code></td></tr>
+        <tr><td><code>Lowercase&lt;S&gt;</code></td><td>All lowercase</td><td><code>"HELLO" → "hello"</code></td></tr>
+        <tr><td><code>Capitalize&lt;S&gt;</code></td><td>First char upper</td><td><code>"hello" → "Hello"</code></td></tr>
+        <tr><td><code>Uncapitalize&lt;S&gt;</code></td><td>First char lower</td><td><code>"Hello" → "hello"</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Building Event Systems</h2>
+    <p>One of the most practical uses of template literal types is creating <strong>typed event systems</strong> — a common pattern in UI frameworks and state machines.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">type</span> <span class="ty">EventMap</span> <span class="op">=</span> {
+  click<span class="op">:</span> { x<span class="op">:</span> <span class="ty">number</span>; y<span class="op">:</span> <span class="ty">number</span> };
+  focus<span class="op">:</span> { target<span class="op">:</span> <span class="ty">HTMLElement</span> };
+  input<span class="op">:</span> { value<span class="op">:</span> <span class="ty">string</span> };
+};
+
+<span class="cm">// Generate "onClick", "onFocus", "onInput" from EventMap keys</span>
+<span class="kw">type</span> <span class="ty">EventHandlers</span> <span class="op">=</span> {
+  [<span class="ty">K</span> <span class="kw">in</span> <span class="kw">keyof</span> <span class="ty">EventMap</span> <span class="kw">as</span> <span class="op">`</span><span class="st">on</span>${<span class="ty">Capitalize</span><span class="op">&lt;</span><span class="ty">string</span> <span class="op">&amp;</span> <span class="ty">K</span><span class="op">&gt;}`</span>]<span class="op">?:</span>
+    (event<span class="op">:</span> <span class="ty">EventMap</span>[<span class="ty">K</span>]) <span class="op">=&gt;</span> <span class="kw">void</span>;
+};
+<span class="cm">// { onClick?: (e: {x,y}) =&gt; void; onFocus?: ...; onInput?: ... }</span></pre>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 5 ═══ -->
+  <article class="chapter" id="ch5">
+    <div class="chapter-label">Chapter 05 · Part II</div>
+    <h1 class="chapter-title">infer & Type Inference</h1>
+    <p class="chapter-intro">The <code>infer</code> keyword lets you extract types from within conditional type patterns. It's one of the most powerful tools in TypeScript — used to "take apart" types and pull out their inner pieces.</p>
+
+    <h2>Declaring Inference Variables</h2>
+    <p><em class="term">infer</em> introduces a new type variable that TypeScript binds to a matched type. It only works inside <code>extends</code> clauses of conditional types.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Extract the return type of any function</span>
+<span class="kw">type</span> <span class="ty">ReturnType</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span>
+  <span class="ty">T</span> <span class="kw">extends</span> (...args<span class="op">:</span> <span class="kw">any</span>[]) <span class="op">=&gt;</span> <span class="kw">infer</span> <span class="ty">R</span> ? <span class="ty">R</span> : <span class="kw">never</span>;
+
+<span class="kw">type</span> <span class="ty">Fn</span> <span class="op">=</span> () <span class="op">=&gt;</span> { id<span class="op">:</span> <span class="ty">number</span>; name<span class="op">:</span> <span class="ty">string</span> };
+<span class="kw">type</span> <span class="ty">R</span> <span class="op">=</span> <span class="ty">ReturnType</span><span class="op">&lt;</span><span class="ty">Fn</span><span class="op">&gt;</span>; <span class="cm">// { id: number; name: string }</span>
+
+<span class="cm">// Extract first argument type</span>
+<span class="kw">type</span> <span class="ty">FirstArg</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span>
+  <span class="ty">T</span> <span class="kw">extends</span> (first<span class="op">:</span> <span class="kw">infer</span> <span class="ty">A</span>, ...rest<span class="op">:</span> <span class="kw">any</span>[]) <span class="op">=&gt;</span> <span class="kw">any</span> ? <span class="ty">A</span> : <span class="kw">never</span>;
+
+<span class="kw">type</span> <span class="ty">Add</span> <span class="op">=</span> (a<span class="op">:</span> <span class="ty">number</span>, b<span class="op">:</span> <span class="ty">number</span>) <span class="op">=&gt;</span> <span class="ty">number</span>;
+<span class="kw">type</span> <span class="ty">FA</span> <span class="op">=</span> <span class="ty">FirstArg</span><span class="op">&lt;</span><span class="ty">Add</span><span class="op">&gt;</span>; <span class="cm">// number</span></pre>
+    </div>
+
+    <h2>Unwrapping Nested Types</h2>
+    <p>You can use <code>infer</code> recursively to unwrap deeply nested generic types like Promises and arrays.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Recursively unwrap Promise&lt;Promise&lt;...&gt;&gt;</span>
+<span class="kw">type</span> <span class="ty">Awaited</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span>
+  <span class="ty">T</span> <span class="kw">extends</span> <span class="ty">Promise</span><span class="op">&lt;</span><span class="kw">infer</span> <span class="ty">U</span><span class="op">&gt;</span> ? <span class="ty">Awaited</span><span class="op">&lt;</span><span class="ty">U</span><span class="op">&gt;</span> : <span class="ty">T</span>;
+
+<span class="kw">type</span> <span class="ty">T1</span> <span class="op">=</span> <span class="ty">Awaited</span><span class="op">&lt;</span><span class="ty">Promise</span><span class="op">&lt;</span><span class="ty">string</span><span class="op">&gt;&gt;</span>;                     <span class="cm">// string</span>
+<span class="kw">type</span> <span class="ty">T2</span> <span class="op">=</span> <span class="ty">Awaited</span><span class="op">&lt;</span><span class="ty">Promise</span><span class="op">&lt;</span><span class="ty">Promise</span><span class="op">&lt;</span><span class="ty">number</span><span class="op">&gt;&gt;&gt;</span>;            <span class="cm">// number</span>
+
+<span class="cm">// Infer within constructors to get instance type</span>
+<span class="kw">type</span> <span class="ty">InstanceOf</span><span class="op">&lt;</span><span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span>
+  <span class="ty">T</span> <span class="kw">extends</span> <span class="kw">new</span> (...args<span class="op">:</span> <span class="kw">any</span>[]) <span class="op">=&gt;</span> <span class="kw">infer</span> <span class="ty">I</span> ? <span class="ty">I</span> : <span class="kw">never</span>;
+
+<span class="kw">class</span> <span class="ty">Car</span> { drive() {} }
+<span class="kw">type</span> <span class="ty">CarInst</span> <span class="op">=</span> <span class="ty">InstanceOf</span><span class="op">&lt;</span><span class="kw">typeof</span> <span class="ty">Car</span><span class="op">&gt;</span>; <span class="cm">// Car</span></pre>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 6 ═══ -->
+  <article class="chapter" id="ch6">
+    <div class="chapter-label">Chapter 06 · Part II</div>
+    <h1 class="chapter-title">Utility Types Deep Dive</h1>
+    <p class="chapter-intro">TypeScript's standard library ships a rich set of utility types. Understanding how they're implemented — not just how to use them — turns you from a consumer into a composer.</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="cc-type">Transformation</div>
+        <div class="cc-name">Partial&lt;T&gt;</div>
+        <p class="cc-desc">All properties optional</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-type">Transformation</div>
+        <div class="cc-name">Required&lt;T&gt;</div>
+        <p class="cc-desc">All properties required</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-type">Transformation</div>
+        <div class="cc-name">Readonly&lt;T&gt;</div>
+        <p class="cc-desc">All properties read-only</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-type">Selection</div>
+        <div class="cc-name">Pick&lt;T,K&gt;</div>
+        <p class="cc-desc">Keep only keys K</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-type">Selection</div>
+        <div class="cc-name">Omit&lt;T,K&gt;</div>
+        <p class="cc-desc">Remove keys K</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-type">Union Ops</div>
+        <div class="cc-name">Exclude&lt;T,U&gt;</div>
+        <p class="cc-desc">Remove U from T union</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-type">Union Ops</div>
+        <div class="cc-name">Extract&lt;T,U&gt;</div>
+        <p class="cc-desc">Keep U members in T</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-type">Function</div>
+        <div class="cc-name">ReturnType&lt;F&gt;</div>
+        <p class="cc-desc">Return type of function</p>
+      </div>
+      <div class="concept-card">
+        <div class="cc-type">Function</div>
+        <div class="cc-name">Parameters&lt;F&gt;</div>
+        <p class="cc-desc">Param tuple of function</p>
+      </div>
+    </div>
+
+    <h2>Composing Utilities</h2>
+    <p>The real art lies in composing these utilities. Most real-world type puzzles are solved by chaining two or three utilities together.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">interface</span> <span class="ty">Config</span> {
+  host<span class="op">:</span> <span class="ty">string</span>;
+  port<span class="op">:</span> <span class="ty">number</span>;
+  debug<span class="op">:</span> <span class="ty">boolean</span>;
+  secret<span class="op">:</span> <span class="ty">string</span>;
+}
+
+<span class="cm">// Public config: pick some fields, make them readonly</span>
+<span class="kw">type</span> <span class="ty">PublicConfig</span> <span class="op">=</span> <span class="ty">Readonly</span><span class="op">&lt;</span><span class="ty">Pick</span><span class="op">&lt;</span><span class="ty">Config</span>, <span class="st">"host"</span> <span class="op">|</span> <span class="st">"port"</span><span class="op">&gt;&gt;</span>;
+
+<span class="cm">// Patch type: all optional except id</span>
+<span class="kw">type</span> <span class="ty">Patch</span><span class="op">&lt;</span><span class="ty">T</span>, <span class="ty">Required</span> <span class="kw">extends</span> <span class="kw">keyof</span> <span class="ty">T</span><span class="op">&gt;</span> <span class="op">=</span>
+  <span class="ty">Pick</span><span class="op">&lt;</span><span class="ty">T</span>, <span class="ty">Required</span><span class="op">&gt;</span> <span class="op">&amp;</span> <span class="ty">Partial</span><span class="op">&lt;</span><span class="ty">Omit</span><span class="op">&lt;</span><span class="ty">T</span>, <span class="ty">Required</span><span class="op">&gt;&gt;</span>;
+
+<span class="kw">type</span> <span class="ty">UserPatch</span> <span class="op">=</span> <span class="ty">Patch</span><span class="op">&lt;</span>{ id<span class="op">:</span> <span class="ty">string</span>; name<span class="op">:</span> <span class="ty">string</span>; email<span class="op">:</span> <span class="ty">string</span> }, <span class="st">"id"</span><span class="op">&gt;</span>;
+<span class="cm">// { id: string; name?: string; email?: string }</span></pre>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 7 ═══ -->
+  <article class="chapter" id="ch7">
+    <div class="chapter-label">Chapter 07 · Part II</div>
+    <h1 class="chapter-title">Narrowing & Type Guards</h1>
+    <p class="chapter-intro">TypeScript's control flow analysis narrows types automatically in many cases. Understanding exactly how narrowing works — and how to extend it with custom guards — gives you precise control over type safety.</p>
+
+    <h2>Control Flow Analysis</h2>
+    <p>TypeScript tracks the type of a variable as it flows through conditionals, assignments, and returns. This is called <strong>control flow-based type analysis</strong>.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">function</span> <span class="fn">process</span>(val<span class="op">:</span> <span class="ty">string</span> <span class="op">|</span> <span class="ty">number</span> <span class="op">|</span> <span class="kw">null</span>) {
+  <span class="kw">if</span> (val <span class="op">===</span> <span class="kw">null</span>) {
+    <span class="cm">// val: null</span>
+    <span class="kw">return</span>;
+  }
+  <span class="cm">// val: string | number</span>
+  <span class="kw">if</span> (<span class="kw">typeof</span> val <span class="op">===</span> <span class="st">"string"</span>) {
+    <span class="cm">// val: string</span>
+    console.<span class="fn">log</span>(val.<span class="fn">toUpperCase</span>());
+  } <span class="kw">else</span> {
+    <span class="cm">// val: number</span>
+    console.<span class="fn">log</span>(val.<span class="fn">toFixed</span>(<span class="nu">2</span>));
+  }
+}</pre>
+    </div>
+
+    <h2>User-Defined Type Guards</h2>
+    <p>The return type <em class="term">arg is Type</em> tells TypeScript: "if this function returns true, then narrow <code>arg</code> to <code>Type</code> in the enclosing scope."</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">interface</span> <span class="ty">Dog</span> { kind<span class="op">:</span> <span class="st">"dog"</span>; bark()<span class="op">:</span> <span class="kw">void</span> }
+<span class="kw">interface</span> <span class="ty">Cat</span> { kind<span class="op">:</span> <span class="st">"cat"</span>; meow()<span class="op">:</span> <span class="kw">void</span> }
+<span class="kw">type</span> <span class="ty">Pet</span> <span class="op">=</span> <span class="ty">Dog</span> <span class="op">|</span> <span class="ty">Cat</span>;
+
+<span class="cm">// Predicate function: narrows based on runtime check</span>
+<span class="kw">function</span> <span class="fn">isDog</span>(pet<span class="op">:</span> <span class="ty">Pet</span>)<span class="op">:</span> pet <span class="kw">is</span> <span class="ty">Dog</span> {
+  <span class="kw">return</span> pet.kind <span class="op">===</span> <span class="st">"dog"</span>;
+}
+
+<span class="kw">function</span> <span class="fn">makeSound</span>(pet<span class="op">:</span> <span class="ty">Pet</span>) {
+  <span class="kw">if</span> (<span class="fn">isDog</span>(pet)) {
+    pet.<span class="fn">bark</span>(); <span class="cm">// ✓ TypeScript knows pet is Dog here</span>
+  } <span class="kw">else</span> {
+    pet.<span class="fn">meow</span>(); <span class="cm">// ✓ And Cat here</span>
+  }
+}
+
+<span class="cm">// Assertion function — throws or narrows</span>
+<span class="kw">function</span> <span class="fn">assertIsString</span>(val<span class="op">:</span> <span class="kw">unknown</span>)<span class="op">:</span> <span class="kw">asserts</span> val <span class="kw">is</span> <span class="ty">string</span> {
+  <span class="kw">if</span> (<span class="kw">typeof</span> val <span class="op">!==</span> <span class="st">"string"</span>) <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">TypeError</span>();
+}</pre>
+    </div>
+
+    <h2>Discriminated Unions</h2>
+    <p>The most idiomatic narrowing pattern in TypeScript is the <strong>discriminated union</strong> — a union whose members share a literal type discriminant field.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">type</span> <span class="ty">Action</span> <span class="op">=</span>
+  <span class="op">|</span> { type<span class="op">:</span> <span class="st">"ADD_TODO"</span>;   payload<span class="op">:</span> { text<span class="op">:</span> <span class="ty">string</span> } }
+  <span class="op">|</span> { type<span class="op">:</span> <span class="st">"REMOVE_TODO"</span>; payload<span class="op">:</span> { id<span class="op">:</span> <span class="ty">number</span> } }
+  <span class="op">|</span> { type<span class="op">:</span> <span class="st">"CLEAR_ALL"</span> };
+
+<span class="kw">function</span> <span class="fn">reducer</span>(action<span class="op">:</span> <span class="ty">Action</span>) {
+  <span class="kw">switch</span> (action.type) {
+    <span class="kw">case</span> <span class="st">"ADD_TODO"</span>:
+      <span class="cm">// action.payload: { text: string }</span>
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">"REMOVE_TODO"</span>:
+      <span class="cm">// action.payload: { id: number }</span>
+      <span class="kw">break</span>;
+    <span class="kw">default</span>:
+      <span class="cm">// Exhaustiveness check: action is never here</span>
+      <span class="kw">const</span> _exhaust<span class="op">:</span> <span class="kw">never</span> <span class="op">=</span> action;
+  }
+}</pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">✓ Pattern</div>
+      <p>The <strong>exhaustiveness check</strong> pattern — assigning to <code>never</code> in the default branch — ensures the compiler catches any future union members you forget to handle. Add this to every switch over a discriminated union.</p>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 8 ═══ -->
+  <article class="chapter" id="ch8">
+    <div class="chapter-label">Chapter 08 · Part III</div>
+    <h1 class="chapter-title">Declaration Merging</h1>
+    <p class="chapter-intro">TypeScript allows multiple declarations with the same name to be merged into a single definition. This enables powerful patterns like module augmentation and interface extension that are fundamental to many major libraries.</p>
+
+    <h2>Interface Merging</h2>
+    <p>Unlike <code>type</code> aliases, <code>interface</code> declarations with the same name <strong>merge</strong>. This is how you augment third-party types without modifying their source.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">interface</span> <span class="ty">Window</span> {
+  myCustomProp<span class="op">:</span> <span class="ty">string</span>;
+}
+
+<span class="cm">// Now window.myCustomProp is typed!</span>
+window.myCustomProp <span class="op">=</span> <span class="st">"hello"</span>; <span class="cm">// ✓</span>
+
+<span class="cm">// Merge interface in a module augmentation</span>
+<span class="kw">declare module</span> <span class="st">"express"</span> {
+  <span class="kw">interface</span> <span class="ty">Request</span> {
+    user<span class="op">?:</span> { id<span class="op">:</span> <span class="ty">string</span>; role<span class="op">:</span> <span class="ty">string</span> };
+  }
+}</pre>
+    </div>
+
+    <h2>Namespace + Class / Function Merging</h2>
+    <p>A namespace can merge with a class or function to add static members or inner types — a pattern used heavily in older codebases and some framework APIs.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">function</span> <span class="fn">buildValidator</span>(schema<span class="op">:</span> <span class="ty">string</span>)<span class="op">:</span> <span class="ty">Validator</span> { <span class="cm">/* ... */</span> }
+
+<span class="cm">// Merge a namespace onto the function</span>
+<span class="kw">namespace</span> buildValidator {
+  <span class="kw">export</span> <span class="kw">type</span> <span class="ty">Options</span> <span class="op">=</span> { strict<span class="op">:</span> <span class="ty">boolean</span> };
+  <span class="kw">export</span> <span class="kw">const</span> <span class="ty">VERSION</span> <span class="op">=</span> <span class="st">"1.0.0"</span>;
+}
+
+<span class="cm">// Works as both function and namespace</span>
+<span class="fn">buildValidator</span>(<span class="st">"email"</span>);
+buildValidator.<span class="ty">VERSION</span>; <span class="cm">// "1.0.0"</span></pre>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 9 ═══ -->
+  <article class="chapter" id="ch9">
+    <div class="chapter-label">Chapter 09 · Part III</div>
+    <h1 class="chapter-title">Decorators</h1>
+    <p class="chapter-intro">Decorators are a stage-3 JavaScript proposal (and TypeScript feature) that let you annotate and modify classes, methods, accessors, and properties declaratively. TypeScript 5.0 shipped support for the modern, standardized decorator API.</p>
+
+    <div class="callout">
+      <div class="callout-label">📌 TypeScript 5.0+</div>
+      <p>These examples use the <strong>modern decorator API</strong> (ECMAScript 2023 decorators), not the legacy experimental decorators. Enable with <code>"experimentalDecorators": false</code> or simply use TS 5.0+ without that flag.</p>
+    </div>
+
+    <h2>Class Decorators</h2>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// A class decorator receives the class constructor</span>
+<span class="kw">function</span> <span class="fn">sealed</span>(target<span class="op">:</span> <span class="kw">new</span> (...args<span class="op">:</span> <span class="kw">any</span>[]) <span class="op">=&gt;</span> <span class="kw">unknown</span>) {
+  <span class="ty">Object</span>.<span class="fn">seal</span>(target);
+  <span class="ty">Object</span>.<span class="fn">seal</span>(target.prototype);
+}
+
+@<span class="fn">sealed</span>
+<span class="kw">class</span> <span class="ty">BugReport</span> {
+  type <span class="op">=</span> <span class="st">"report"</span>;
+  <span class="kw">constructor</span>(<span class="kw">public</span> title<span class="op">:</span> <span class="ty">string</span>) {}
+}</pre>
+    </div>
+
+    <h2>Method Decorators</h2>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Log execution time of any method</span>
+<span class="kw">function</span> <span class="fn">measure</span>(
+  target<span class="op">:</span> <span class="kw">unknown</span>,
+  context<span class="op">:</span> <span class="ty">ClassMethodDecoratorContext</span>
+) {
+  <span class="kw">const</span> name <span class="op">=</span> <span class="ty">String</span>(context.name);
+  <span class="kw">return</span> <span class="kw">function</span>(this<span class="op">:</span> <span class="kw">unknown</span>, ...args<span class="op">:</span> <span class="kw">unknown</span>[]) {
+    <span class="kw">const</span> start <span class="op">=</span> <span class="ty">performance</span>.now();
+    <span class="kw">const</span> result <span class="op">=</span> (target <span class="kw">as</span> <span class="ty">Function</span>).<span class="fn">call</span>(this, ...args);
+    console.<span class="fn">log</span>(<span class="op">`</span>${name}<span class="st"> took </span>${<span class="ty">performance</span>.now() <span class="op">-</span> start}<span class="st">ms</span><span class="op">`</span>);
+    <span class="kw">return</span> result;
+  };
+}
+
+<span class="kw">class</span> <span class="ty">Analytics</span> {
+  @<span class="fn">measure</span>
+  <span class="fn">processReport</span>(data<span class="op">:</span> <span class="ty">ReportData</span>) { <span class="cm">/* ... */</span> }
+}</pre>
+    </div>
+  </article>
+
+  <!-- ═══ CHAPTER 10 ═══ -->
+  <article class="chapter" id="ch10">
+    <div class="chapter-label">Chapter 10 · Part III</div>
+    <h1 class="chapter-title">Module Patterns</h1>
+    <p class="chapter-intro">TypeScript's module system mirrors JavaScript's, but adds layers of type-only imports, ambient modules, and declaration files. Mastering this is critical for authoring libraries and working in large codebases.</p>
+
+    <h2>Type-Only Imports</h2>
+    <p>The <em class="term">import type</em> syntax imports a type that is <strong>completely erased</strong> at runtime. This prevents circular dependency issues and signals intent clearly.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="cm">// Only imports the type — zero runtime cost</span>
+<span class="kw">import type</span> { <span class="ty">User</span> } <span class="kw">from</span> <span class="st">"./user"</span>;
+
+<span class="cm">// You can also inline type within a regular import</span>
+<span class="kw">import</span> { <span class="kw">type</span> <span class="ty">Config</span>, <span class="fn">createApp</span> } <span class="kw">from</span> <span class="st">"./app"</span>;
+
+<span class="cm">// Useful for satisfies operator (TS 4.9+)</span>
+<span class="kw">const</span> config <span class="op">=</span> {
+  port<span class="op">:</span> <span class="nu">3000</span>,
+  host<span class="op">:</span> <span class="st">"localhost"</span>
+} <span class="kw">satisfies</span> <span class="ty">Config</span>;</pre>
+    </div>
+
+    <h2>Ambient Modules & Declaration Files</h2>
+    <p>For modules with no TypeScript source, you write <strong>ambient declarations</strong> in <code>.d.ts</code> files to tell the compiler what types exist.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript (*.d.ts)</span>
+      </div>
+      <pre><span class="cm">// Declare a module for a JS library with no types</span>
+<span class="kw">declare module</span> <span class="st">"legacy-lib"</span> {
+  <span class="kw">export function</span> <span class="fn">doThing</span>(x<span class="op">:</span> <span class="ty">string</span>)<span class="op">:</span> <span class="ty">number</span>;
+  <span class="kw">export const</span> version<span class="op">:</span> <span class="ty">string</span>;
+}
+
+<span class="cm">// Wildcard module for file types (e.g. CSS modules)</span>
+<span class="kw">declare module</span> <span class="st">"*.css"</span> {
+  <span class="kw">const</span> styles<span class="op">:</span> { [className<span class="op">:</span> <span class="ty">string</span>]<span class="op">:</span> <span class="ty">string</span> };
+  <span class="kw">export default</span> styles;
+}
+
+<span class="cm">// Augment an existing module</span>
+<span class="kw">declare module</span> <span class="st">"lodash"</span> {
+  <span class="kw">interface</span> <span class="ty">LoDashStatic</span> {
+    myCustomUtil(x<span class="op">:</span> <span class="ty">string</span>)<span class="op">:</span> <span class="ty">string</span>;
+  }
+}</pre>
+    </div>
+
+    <h2>The satisfies Operator</h2>
+    <p>Introduced in TypeScript 4.9, <em class="term">satisfies</em> validates that a value matches a type while keeping the <strong>most specific inferred type</strong> — the best of both worlds.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">TypeScript</span>
+      </div>
+      <pre><span class="kw">type</span> <span class="ty">Routes</span> <span class="op">=</span> Record<span class="op">&lt;</span><span class="ty">string</span>, { path<span class="op">:</span> <span class="ty">string</span>; title<span class="op">:</span> <span class="ty">string</span> }<span class="op">&gt;</span>;
+
+<span class="cm">// With "as Routes" — loses specific key types</span>
+<span class="kw">const</span> routes1 <span class="op">=</span> {
+  home<span class="op">:</span> { path<span class="op">:</span> <span class="st">"/"</span>, title<span class="op">:</span> <span class="st">"Home"</span> }
+} <span class="kw">as</span> <span class="ty">Routes</span>;
+routes1.nonexistent; <span class="cm">// No error! Type is Record&lt;string,...&gt;</span>
+
+<span class="cm">// With "satisfies" — validates AND keeps specific keys</span>
+<span class="kw">const</span> routes2 <span class="op">=</span> {
+  home<span class="op">:</span> { path<span class="op">:</span> <span class="st">"/"</span>, title<span class="op">:</span> <span class="st">"Home"</span> }
+} <span class="kw">satisfies</span> <span class="ty">Routes</span>;
+routes2.nonexistent; <span class="cm">// ✗ Error! Key doesn't exist</span>
+routes2.home.path;   <span class="cm">// ✓ TypeScript knows this is "/"</span></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">✓ Rule of Thumb</div>
+      <p>Prefer <strong>satisfies</strong> over type annotations for object literals when you want both validation and precise inference. Use annotations when you want the broader type to flow forward through your code.</p>
+    </div>
+  </article>
+
+  <!-- NAVIGATION -->
+  <div class="chapter-nav">
+    <a href="#cover" class="nav-btn">↑ Back to Cover</a>
+    <a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" class="nav-btn">TypeScript Docs ↗</a>
+  </div>
+
+</main>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    const scrolled = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+    document.getElementById('progress').style.width = (scrolled * 100) + '%';
+  });
+
+  // Active TOC link tracking
+  const sections = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('.toc-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3, rootMargin: '-10% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
+
+  // Close sidebar on link click (mobile)
+  links.forEach(l => l.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('open');
+  }));
+</script>
+</body>
+</html>
